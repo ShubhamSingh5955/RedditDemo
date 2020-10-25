@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.twitterdemo.model.Feed;
 import com.example.twitterdemo.model.entry.Entry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -49,23 +50,41 @@ public class MainActivity extends AppCompatActivity {
             //    Log.e(TAG,"onResponse: updated: "+entrys.get(0).getUpdated());
             //    Log.e(TAG,"onResponse: title: "+entrys.get(0).getTitle());
 
-                for(int i=0;i<entrys.size();i++){
-                    ExtractXML extractXML1=new ExtractXML(entrys.get(0).getCotent(),"<a href=");
+                ArrayList<Post> posts =new ArrayList<Post>();
+                for(int i = 0; i< entrys.size(); i++){
+                    ExtractXML extractXML1=new ExtractXML(entrys.get(i).getCotent(),"<a href=");
                     List<String> postContent=extractXML1.start();
 
-                    ExtractXML extractXML2=new ExtractXML(entrys.get(0).getCotent(),"<img src=");
+                    ExtractXML extractXML2=new ExtractXML(entrys.get(i).getCotent(),"<img src=");
+
                     try {
                         postContent.add(extractXML2.start().get(0));
                     }catch (NullPointerException e){
                         postContent.add(null);
                         Log.e(TAG,"onResponse: NullPointerException(thumbnail):"+e.getMessage());
-                    }catch (IndexOutOfBoundsException e){
-                    postContent.add(null);
+                    }
+                    catch (IndexOutOfBoundsException e){
+                         postContent.add(null);
                         Log.e(TAG,"onResponse: IndexOutOfBoundsException(thumbnail):"+e.getMessage());
                     }
+                    int lastPosition = postContent.size() - 1;
+                    posts.add(new Post(
+                            entrys.get(i).getTitle(),
+                            entrys.get(i).getAuthor().getName(),
+                            entrys.get(i).getUpdated(),
+                            postContent.get(0),
+                            postContent.get(lastPosition)
 
+                    ));
                 }
-
+                for(int j=0;j<posts.size();j++){
+                    Log.d(TAG,"onResponse:  \n " +
+                            "posURL: "+ posts.get(j).getpostURL() +"\n "
+                                    + "thumbnailURL: "+ posts.get(j).getThumbnailURl() +"\n " +
+                                    "Title: "+ posts.get(j).getTitle() +"\n " +
+                                    "Author: "+ posts.get(j).getAuthor() +"\n " +
+                                    "updated: "+ posts.get(j).getDate_updated() +"\n ");
+                }
             }
             @Override
             public void onFailure(Call<Feed> call, Throwable t) {
